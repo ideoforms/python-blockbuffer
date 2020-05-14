@@ -37,4 +37,4 @@ stream.start()
 
 ## Source code
 
-Source code is available on [GitHub](https://github.com/ideoforms/python-blockbuffer/releases).
+Source code is available on [GitHub](https://github.com/ideoforms/python-blockbuffer).
