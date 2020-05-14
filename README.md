@@ -6,11 +6,13 @@ It is intended to be fed with arrays of arbitrary-length samples, and returns ar
 
 Its primary purpose is for applying the short-time Fourier Transform (STFT) to an input audio stream.
 
+It is safe for usage in real-time audio applications, as no memory allocation or system I/O is done within the `extend` method.
+
 ## Usage
 
 To do block-sized buffering with overlap in conjunction with [sounddevice](https://python-sounddevice.readthedocs.io/):
 
-```
+```python
 import sounddevice as sd
 import numpy as np
 import blockbuffer
