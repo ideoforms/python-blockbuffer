@@ -5,6 +5,12 @@ BLOCK_BUFFER_DEFAULT_CAPACITY_BLOCKS = 8
 
 class BlockBuffer(object):
     def __init__(self, block_size, hop_size=None, capacity=None):
+        """
+        Args:
+            block_size: The number of samples to return per block.
+            hop_size: The amount the read head should be moved forward per block.
+            capacity: The total buffer capacity in samples. Defaults to block_size * 8.
+        """
         self.block_size = block_size
         self.hop_size = hop_size if hop_size is not None else block_size
         self.write_position = 0
@@ -33,10 +39,11 @@ class BlockBuffer(object):
 
     def extend(self, frames):
         """
+        Append frames to the buffer.
+        Safe for usage in real-time audio applications, as no memory allocation or system I/O is done
 
         Args:
-            frames: A 1D array of frames to process
-
+            frames: A 1D array of frames to process.
         """
         if len(np.shape(frames)) > 1:
             raise BlockBufferValueException("Block buffer currently only supports 1D data")
@@ -57,11 +64,11 @@ class BlockBuffer(object):
 
     def get(self):
         """
+        Returns a block of samples from the buffer, if any are available.
 
         Returns:
             An array of exactly `block_size` samples, or None if no more blocks remain
             to be read.
-
         """
         if self.length >= self.block_size:
             if self.read_position + self.block_size <= self.capacity:
@@ -79,10 +86,8 @@ class BlockBuffer(object):
     @property
     def blocks(self):
         """
-
         Returns:
             A generator which yields remaining blocks of samples.
-
         """
         while True:
             rv = self.get()
