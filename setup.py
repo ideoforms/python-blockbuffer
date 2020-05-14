@@ -4,8 +4,10 @@ from setuptools import setup
 
 setup(
     name = 'blockbuffer',
-    version = '0.0.2',
+    version = '0.0.3',
     description = 'Buffer audio samples into fixed-sized blocks, with overlap',
+    long_description = open("README.md", "r").read(),
+    long_description_content_type = "text/markdown",
     author = 'Daniel Jones',
     author_email = 'dan-code@erase.net',
     url = 'https://github.com/ideoforms/python-blockbuffer',

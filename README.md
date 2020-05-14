@@ -34,3 +34,7 @@ def input_callback(data, frames, time, status):
 stream = sd.InputStream(callback=input_callback, channels=1)
 stream.start()
 ```
+
+## Source code
+
+Source code is available on [GitHub](https://github.com/ideoforms/python-blockbuffer/releases).
