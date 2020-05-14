@@ -4,8 +4,8 @@ from setuptools import setup
 
 setup(
     name = 'blockbuffer',
-    version = '0.0.1',
-    description = 'Bufferand iterate over audio blocks of a fixed size, with overlap',
+    version = '0.0.2',
+    description = 'Buffer audio samples into fixed-sized blocks, with overlap',
     author = 'Daniel Jones',
     author_email = 'dan-code@erase.net',
     url = 'https://github.com/ideoforms/python-blockbuffer',
