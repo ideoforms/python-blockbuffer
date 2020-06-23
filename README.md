@@ -2,7 +2,7 @@
 
 This small utility package encapsulates a single-consumer, single-producer ringbuffer. 
 
-* Populate the buffer with arrays of arbitrary-length samples
+* Populate the buffer with arbitrary-length arrays of values
 * Query the buffer, and it returns arrays of a specified fixed length, optionally with overlap between successive blocks
 
 It is designed primarily for applying the short-time Fourier transform (STFT) to successive blocks of an input audio stream (see below for example).
