@@ -4,18 +4,21 @@ from .exceptions import BlockBufferValueException, BlockBufferFullException
 BLOCK_BUFFER_DEFAULT_CAPACITY_BLOCKS = 8
 
 class BlockBuffer(object):
-    def __init__(self, block_size, hop_size=None, capacity=None):
+    def __init__(self, block_size, hop_size=None, capacity=None, auto_resize=False):
         """
         Args:
             block_size: The number of samples to return per block.
             hop_size: The amount the read head should be moved forward per block.
             capacity: The total buffer capacity in samples. Defaults to block_size * 8.
+            auto_resize: Automatically resize the buffer if it is extended beyond capacity.
+                         Does memory allocation, so should not be used in real-time threads.
         """
         self.block_size = block_size
         self.hop_size = hop_size if hop_size is not None else block_size
         self.write_position = 0
         self.read_position = 0
         self.length = 0
+        self.auto_resize = auto_resize
 
         if capacity:
             self.capacity = capacity
@@ -50,7 +53,14 @@ class BlockBuffer(object):
 
         num_frames = len(frames)
         if self.length + num_frames > self.capacity:
-            raise BlockBufferFullException("Block buffer overflowed")
+            if self.auto_resize:
+                size_increase = self.length + num_frames - self.capacity
+                self.queue = np.pad(self.queue, (0, size_increase))
+                self.capacity += size_increase
+            else:
+                raise BlockBufferFullException("Block buffer overflowed")
+
+        self.write_position = self.write_position % self.capacity
 
         if self.write_position + num_frames <= self.capacity:
             self.queue[self.write_position:self.write_position+num_frames] = frames
@@ -60,7 +70,7 @@ class BlockBuffer(object):
             self.queue[:num_frames - remaining_frames] = frames[remaining_frames:]
 
         self.length += num_frames
-        self.write_position = (self.write_position + num_frames) % self.capacity
+        self.write_position = self.write_position + num_frames
 
     def get(self):
         """
