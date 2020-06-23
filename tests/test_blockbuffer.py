@@ -18,6 +18,19 @@ def test_blockbuffer_capacity():
     with pytest.raises(BlockBufferFullException):
         bb.extend([ 9 ])
 
+def test_blockbuffer_auto_resize():
+    bb = BlockBuffer(4, capacity=8, auto_resize=True)
+    bb.extend([ 1, 2, 3, 4 ])
+    assert bb.capacity == 8
+    bb.extend([ 5, 6, 7, 8 ])
+    assert bb.capacity == 8
+    bb.extend([ 9, 10, 11, 12 ])
+    assert bb.capacity == 12
+    assert np.array_equal(bb.get(), [ 1, 2, 3, 4 ])
+    assert np.array_equal(bb.get(), [ 5, 6, 7, 8 ])
+    assert np.array_equal(bb.get(), [ 9, 10, 11, 12 ])
+    assert bb.get() is None
+
 def test_blockbuffer_hop():
     bb = BlockBuffer(8, 2)
     bb.extend([ 1, 2, 3, 4 ])
@@ -70,3 +83,4 @@ def test_blockbuffer_bad_values():
     bb = BlockBuffer(4)
     with pytest.raises(BlockBufferValueException):
         bb.extend(np.array([ [1, 2], [3, 4]]))
+
