@@ -22,13 +22,14 @@ block_size = 1024
 hop_size = 128
 
 bb = blockbuffer.BlockBuffer(block_size=block_size,
-                             hop_size=hop_size)
+                             hop_size=hop_size,
+                             num_channels=2)
 
 def input_callback(data, frames, time, status):
     global bb
-    bb.extend(data.flatten())
+    bb.extend(data)
     for block in bb:
-        block_windowed = block * np.hanning(block_size)
+        block_windowed = block.T * np.hanning(block_size)
         block_spectrum = np.fft.rfft(block_windowed)
 
 stream = sd.InputStream(callback=input_callback, channels=1)
