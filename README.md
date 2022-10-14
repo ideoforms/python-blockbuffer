@@ -2,12 +2,12 @@
 
 This small utility package encapsulates a single-consumer, single-producer ringbuffer. 
 
-* Populate the buffer with arbitrary-length arrays of values
-* Query the buffer, and it returns arrays of a specified fixed length, optionally with overlap between successive blocks
+* Populate the buffer with arbitrary-length arrays
+* Query the buffer, and it returns blocks of a specified fixed length, optionally with overlap between successive blocks
 
 It is designed primarily for applying the short-time Fourier transform (STFT) to successive blocks of an input audio stream (see below for example).
 
-It is safe for usage in real-time audio applications, as no memory allocation or system I/O is done within the `extend` method.
+It is safe for usage in real-time audio applications, as no memory allocation or system I/O is done within the `extend` method as long as `auto_resize=False` is specified when initialising.
 
 ## Usage
 
@@ -25,7 +25,7 @@ bb = blockbuffer.BlockBuffer(block_size=block_size,
                              hop_size=hop_size,
                              num_channels=2)
 
-def input_callback(data, frames, time, status):
+def input_callback(data, num_frames, time, status):
     global bb
     bb.extend(data)
     for block in bb:

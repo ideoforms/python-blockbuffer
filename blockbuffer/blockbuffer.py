@@ -4,7 +4,7 @@ from .exceptions import BlockBufferValueException, BlockBufferFullException
 BLOCK_BUFFER_DEFAULT_CAPACITY_BLOCKS = 64
 
 class BlockBuffer(object):
-    def __init__(self, block_size, hop_size=None, num_channels=1, capacity=None, auto_resize=False, dtype=np.float32):
+    def __init__(self, block_size, hop_size=None, num_channels=1, capacity=None, auto_resize=True, dtype=np.float32):
         """
         Args:
             block_size: The number of samples to return per block.
@@ -12,7 +12,8 @@ class BlockBuffer(object):
             num_channels: The number of channels to allocate.
             capacity: The total buffer capacity in samples. Defaults to block_size * 8.
             auto_resize: Automatically resize the buffer if it is extended beyond capacity.
-                         Does memory allocation, so should not be used in real-time threads.
+                         Does memory allocation, so should be disabled to ensure in real-time 
+                         threads.
             dtype: Data type (dtype) of samples stored in blockbuffer.
         """
         self.block_size = block_size
@@ -64,6 +65,9 @@ class BlockBuffer(object):
         # Type checking and array validation.
         #--------------------------------------------------------------------------------
         if type(frames) == np.ndarray:
+            #--------------------------------------------------------------------------------
+            # Input array is a numpy ndarray
+            #--------------------------------------------------------------------------------
             if frames.ndim > 2:
                 raise BlockBufferValueException("Invalid number of dimensions in frames")
             elif (frames.ndim == 2 and frames.shape[1] != self.num_channels) or \
@@ -71,6 +75,9 @@ class BlockBuffer(object):
                 raise BlockBufferValueException("Invalid number of channels in frames (expected %d, got %d)" %
                                  (self.num_channels, frames.shape[1]))
         else:
+            #--------------------------------------------------------------------------------
+            # Input array is a native Python list
+            #--------------------------------------------------------------------------------
             if self.num_channels == 1:
                 if not isinstance(frames[0], (int, float)):
                     raise BlockBufferValueException("Invalid number of dimensions in frames")
@@ -101,24 +108,37 @@ class BlockBuffer(object):
         self.write_position = self.write_position % self.capacity
 
         if self.write_position + num_frames <= self.capacity:
-            if self.num_channels == 1:
-                self.queue[self.write_position:self.write_position + num_frames, 0] = frames
-            elif type(frames) == np.ndarray:
-                self.queue[self.write_position:self.write_position + num_frames] = frames
+            #--------------------------------------------------------------------------------
+            # There is enough space remaining the buffer to write the frames without
+            # wrapping.
+            #--------------------------------------------------------------------------------
+            if type(frames) == np.ndarray:
+                if frames.ndim == 1:
+                    self.queue[self.write_position:self.write_position + num_frames, 0] = frames
+                else:
+                    self.queue[self.write_position:self.write_position + num_frames] = frames
             else:
-                for index, row in enumerate(frames):
-                    self.queue[self.write_position + index] = row
+                if self.num_channels == 1:
+                    self.queue[self.write_position:self.write_position + num_frames, 0] = frames
+                else:
+                    for index, row in enumerate(frames):
+                        self.queue[self.write_position + index] = row
         else:
             remaining_frames = self.capacity - self.write_position
-            if self.num_channels == 1:
-                self.queue[self.write_position:, 0] = frames[:remaining_frames]
-                self.queue[:num_frames - remaining_frames, 0] = frames[remaining_frames:]
-            elif type(frames) == np.ndarray:
-                self.queue[self.write_position:] = frames[:remaining_frames]
-                self.queue[:num_frames - remaining_frames] = frames[remaining_frames:]
+            if type(frames) == np.ndarray:
+                if frames.ndim == 1:
+                    self.queue[self.write_position:, 0] = frames[:remaining_frames]
+                    self.queue[:num_frames - remaining_frames, 0] = frames[remaining_frames:]
+                else:
+                    self.queue[self.write_position:] = frames[:remaining_frames]
+                    self.queue[:num_frames - remaining_frames] = frames[remaining_frames:]
             else:
-                for index, row in enumerate(frames):
-                    self.queue[(self.write_position + index) % self.capacity] = row
+                if self.num_channels == 1:
+                    self.queue[self.write_position:, 0] = frames[:remaining_frames]
+                    self.queue[:num_frames - remaining_frames, 0] = frames[remaining_frames:]
+                else:
+                    for index, row in enumerate(frames):
+                        self.queue[(self.write_position + index) % self.capacity] = row
 
         #--------------------------------------------------------------------------------
         # Update length and write position

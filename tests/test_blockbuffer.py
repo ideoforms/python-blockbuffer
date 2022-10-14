@@ -12,14 +12,14 @@ def test_blockbuffer_basic():
     assert bb.get() is None
 
 def test_blockbuffer_capacity():
-    bb = BlockBuffer(4, capacity=8)
+    bb = BlockBuffer(4, capacity=8, auto_resize=False)
     bb.extend([1, 2, 3, 4])
     bb.extend([5, 6, 7, 8])
     with pytest.raises(BlockBufferFullException):
         bb.extend([9])
 
 def test_blockbuffer_auto_resize():
-    bb = BlockBuffer(4, capacity=8, auto_resize=True)
+    bb = BlockBuffer(4, capacity=8)
     bb.extend([1, 2, 3, 4])
     assert bb.capacity == 8
     bb.extend([5, 6, 7, 8])
@@ -84,27 +84,40 @@ def test_blockbuffer_bad_values():
     with pytest.raises(BlockBufferValueException):
         bb.extend(np.array([[1, 2], [3, 4]]))
 
+def test_blockbuffer_1D_2D():
+    bb = BlockBuffer(4)
+    assert bb.get() is None
+    bb.extend(np.array([[1, 2, 3, 4, 5, 6, 7, 8]]).T)
+    assert np.array_equal(bb.get(), [1, 2, 3, 4])
+    assert np.array_equal(bb.get(), [5, 6, 7, 8])
+    assert bb.get() is None
+
 def test_blockbuffer_2D():
     bb = BlockBuffer(2, num_channels=2)
     bb.extend(np.array([[1, 2, 3, 4], [5, 6, 7, 8]]).T)
-    assert np.array_equal(bb.get(), np.array([[1, 5], [2, 6]]))
-    assert np.array_equal(bb.get(), np.array([[3, 7], [4, 8]]))
+    assert np.array_equal(bb.get(), np.array([[1, 5],
+                                              [2, 6]]))
+    assert np.array_equal(bb.get(), np.array([[3, 7],
+                                              [4, 8]]))
     assert bb.get() is None
 
     bb = BlockBuffer(2, num_channels=2)
-    bb.extend([[1, 5], [2, 6]])
-    assert np.array_equal(bb.get(), np.array([[1, 5], [2, 6]]))
+    bb.extend(np.array([[1, 2], [5, 6]]).T)
+    assert np.array_equal(bb.get(), np.array([[1, 5],
+                                              [2, 6]]))
     assert bb.get() is None
-    bb.extend([[3, 7], [4, 8], [5, 9], [6, 10]])
-    assert np.array_equal(bb.get(), np.array([[3, 7], [4, 8]]))
-    assert np.array_equal(bb.get(), np.array([[5, 9], [6, 10]]))
+    bb.extend(np.array([[3, 4, 5, 6], [7, 8, 9, 10]]).T)
+    assert np.array_equal(bb.get(), np.array([[3, 7],
+                                              [4, 8]]))
+    assert np.array_equal(bb.get(), np.array([[5, 9],
+                                              [6, 10]]))
     assert bb.get() is None
 
     bb = BlockBuffer(2, num_channels=2)
-    bb.extend(np.array([[1, 5], [2, 6]]))
+    bb.extend(np.array([[1, 2], [5, 6]]).T)
     assert np.array_equal(bb.get(), np.array([[1, 5], [2, 6]]))
     assert bb.get() is None
-    bb.extend(np.array([[3, 7], [4, 8], [5, 9], [6, 10]]))
+    bb.extend(np.array([[3, 4, 5, 6], [7, 8, 9, 10]]).T)
     assert np.array_equal(bb.get(), np.array([[3, 7], [4, 8]]))
     assert np.array_equal(bb.get(), np.array([[5, 9], [6, 10]]))
     assert bb.get() is None
