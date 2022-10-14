@@ -108,3 +108,10 @@ def test_blockbuffer_2D():
     assert np.array_equal(bb.get(), np.array([[3, 7], [4, 8]]))
     assert np.array_equal(bb.get(), np.array([[5, 9], [6, 10]]))
     assert bb.get() is None
+
+def test_blockbuffer_dtypes():
+    for dtype in (np.int16, np.int32, np.float16, np.float32, np.float64):
+        bb = BlockBuffer(2, dtype=dtype)
+        bb.extend([1, 2, 3, 4, 5, 6])
+        for block in bb:
+            assert block.dtype == dtype

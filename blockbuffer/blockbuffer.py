@@ -4,7 +4,7 @@ from .exceptions import BlockBufferValueException, BlockBufferFullException
 BLOCK_BUFFER_DEFAULT_CAPACITY_BLOCKS = 64
 
 class BlockBuffer(object):
-    def __init__(self, block_size, hop_size=None, num_channels=1, capacity=None, auto_resize=False):
+    def __init__(self, block_size, hop_size=None, num_channels=1, capacity=None, auto_resize=False, dtype=np.float32):
         """
         Args:
             block_size: The number of samples to return per block.
@@ -13,6 +13,7 @@ class BlockBuffer(object):
             capacity: The total buffer capacity in samples. Defaults to block_size * 8.
             auto_resize: Automatically resize the buffer if it is extended beyond capacity.
                          Does memory allocation, so should not be used in real-time threads.
+            dtype: Data type (dtype) of samples stored in blockbuffer.
         """
         self.block_size = block_size
         self.hop_size = hop_size if hop_size is not None else block_size
@@ -39,12 +40,12 @@ class BlockBuffer(object):
         #--------------------------------------------------------------------------------
         # Ringbuffer to store the entire audio queue.
         #--------------------------------------------------------------------------------
-        self.queue = np.zeros((self.capacity, self.num_channels))
+        self.queue = np.zeros((self.capacity, self.num_channels), dtype=dtype)
 
         #--------------------------------------------------------------------------------
         # Used to store and return each buffer of audio.
         #--------------------------------------------------------------------------------
-        self.return_buffer = np.zeros((self.block_size, self.num_channels))
+        self.return_buffer = np.zeros((self.block_size, self.num_channels), dtype=dtype)
 
     def __iter__(self):
         return self.blocks
