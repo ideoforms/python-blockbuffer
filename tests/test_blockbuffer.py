@@ -84,12 +84,20 @@ def test_blockbuffer_bad_values():
     with pytest.raises(BlockBufferValueException):
         bb.extend(np.array([[1, 2], [3, 4]]))
 
-def test_blockbuffer_1D_2D():
+def test_blockbuffer_pass_2D_mono_array():
     bb = BlockBuffer(4)
     assert bb.get() is None
     bb.extend(np.array([[1, 2, 3, 4, 5, 6, 7, 8]]).T)
     assert np.array_equal(bb.get(), [1, 2, 3, 4])
     assert np.array_equal(bb.get(), [5, 6, 7, 8])
+    assert bb.get() is None
+
+def test_blockbuffer_always_2d():
+    bb = BlockBuffer(4, always_2d=True)
+    assert bb.get() is None
+    bb.extend(np.array([[1, 2, 3, 4, 5, 6, 7, 8]]).T)
+    assert np.array_equal(bb.get(), np.array([[1, 2, 3, 4]]).T)
+    assert np.array_equal(bb.get(), np.array([[5, 6, 7, 8]]).T)
     assert bb.get() is None
 
 def test_blockbuffer_2D():

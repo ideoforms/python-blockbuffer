@@ -4,7 +4,7 @@ from .exceptions import BlockBufferValueException, BlockBufferFullException
 BLOCK_BUFFER_DEFAULT_CAPACITY_BLOCKS = 64
 
 class BlockBuffer(object):
-    def __init__(self, block_size, hop_size=None, num_channels=1, capacity=None, auto_resize=True, dtype=np.float32):
+    def __init__(self, block_size, hop_size=None, num_channels=1, capacity=None, auto_resize=True, dtype=np.float32, always_2d=False):
         """
         Args:
             block_size: The number of samples to return per block.
@@ -15,6 +15,9 @@ class BlockBuffer(object):
                          Does memory allocation, so should be disabled to ensure in real-time 
                          threads.
             dtype: Data type (dtype) of samples stored in blockbuffer.
+            always_2d: If True, always returns a 2D array even if the input only has one channel,
+                       as per soundfile's always_2d argument.
+
         """
         self.block_size = block_size
         self.hop_size = hop_size if hop_size is not None else block_size
@@ -23,6 +26,7 @@ class BlockBuffer(object):
         self.read_position = 0
         self.length = 0
         self.auto_resize = auto_resize
+        self.always_2d = always_2d
 
         if capacity:
             self.capacity = capacity
@@ -164,7 +168,7 @@ class BlockBuffer(object):
                 rv = self.return_buffer
             self.length -= self.hop_size
             self.read_position = (self.read_position + self.hop_size) % self.capacity
-            if self.num_channels == 1:
+            if self.num_channels == 1 and not self.always_2d:
                 return rv[:, 0]
             else:
                 return rv
