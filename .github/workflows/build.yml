@@ -12,4 +12,4 @@ jobs:
         sudo apt-get install python3 python3-setuptools python3-pip
         sudo pip3 install numpy pytest
     - name: Python test
-      run: python3 setup.py test
+      run: pytest
