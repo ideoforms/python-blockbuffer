@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name = 'blockbuffer',
-    version = '0.0.3',
+    version = '0.0.4',
     description = 'Buffer audio samples into fixed-sized blocks, with overlap',
     long_description = open("README.md", "r").read(),
     long_description_content_type = "text/markdown",
