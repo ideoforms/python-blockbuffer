@@ -1,5 +1,7 @@
 # Python: Buffer audio samples into fixed-sized blocks, with overlap
 
+![ci](https://github.com/ideoforms/python-blockbuffer/workflows/ci/badge.svg)
+
 This small utility package encapsulates a single-consumer, single-producer ringbuffer. 
 
 * Populate the buffer with arbitrary-length arrays
@@ -8,6 +10,10 @@ This small utility package encapsulates a single-consumer, single-producer ringb
 It is designed primarily for applying the short-time Fourier transform (STFT) to successive blocks of an input audio stream (see below for example).
 
 It is safe for usage in real-time audio applications, as no memory allocation or system I/O is done within the `extend` method as long as `auto_resize=False` is specified when initialising.
+
+## Installation
+
+To install from pip: `python3 -m pip install blockbuffer`
 
 ## Usage
 
